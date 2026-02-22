@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Catana Client · TMA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+
+<style>
+/* TMA variables — подхватываем тему Telegram */
+:root {
+--bg: var(--tg-theme-bg-color, #000);
+--card: var(--tg-theme-secondary-bg-color, #111);
+--text: var(--tg-theme-text-color, #fff);
+--hint: var(--tg-theme-hint-color, #aaa);
+--link: var(--tg-theme-link-color, #2ea6ff);
+--border: var(--tg-theme-section-separator-color, #2a2a2a);
+--button: var(--tg-theme-button-color, #2ea6ff);
+--button-text: var(--tg-theme-button-text-color, #fff);
+--accent: var(--tg-theme-accent-text-color, #2ea6ff);
+}
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+-webkit-tap-highlight-color: transparent;
+}
+
+html {
+scroll-behavior: smooth;
+height: 100%;
+overflow-x: hidden;
+}
+
+body {
+background: var(--bg);
+color: var(--text);
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+min-height: 100vh;
+padding-top: 60px; /* под нав, который теперь фиксирован и ниже */
+padding-bottom: 20px;
+line-height: 1.5;
+-webkit-font-smoothing: antialiased;
+}
+
+/* Telegram mini app кнопка "назад" и т.д. учитываем */
+/* NAV — адаптирован под мобильные тапы */
+nav {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 60px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 16px;
+background: color-mix(in srgb, var(--bg) 92%, transparent);
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
+border-bottom: 1px solid var(--border);
+z-index: 1000;
+box-sizing: border-box;
+}
+
+nav img {
+height: 34px;
+width: auto;
+display: block;
+}
+
+.links {
+display: flex;
+gap: 8px;
+}
+
+.links a {
+color: var(--hint);
+text-decoration: none;
+font-size: 14px;
+font-weight: 500;
+padding: 8px 12px;
+border-radius: 30px;
+background: transparent;
+transition: 0.2s;
+-webkit-touch-callout: none;
+}
+
+.links a:active {
+background: var(--border);
+color: var(--text);
+}
+
+/* HERO */
+.hero {
+min-height: calc(100vh - 60px);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+text-align: center;
+padding: 20px 16px;
+margin-top: -10px;
+}
+
+.hero h1 {
+font-size: clamp(40px, 15vw, 70px);
+font-weight: 700;
+letter-spacing: -0.02em;
+line-height: 1.1;
+animation: slideUp 0.7s ease-out;
+color: var(--text);
+}
+
+.hero p {
+color: var(--hint);
+margin-top: 16px;
+font-size: 16px;
+max-width: 280px;
+}
+
+/* SECTIONS */
+.section {
+padding: 70px 16px;
+max-width: 600px; /* лимит для удобного чтения на телефоне */
+margin: 0 auto;
+text-align: center;
+opacity: 0;
+transform: translateY(24px);
+transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.section.show {
+opacity: 1;
+transform: translateY(0);
+}
+
+.section h2 {
+font-size: 32px;
+font-weight: 600;
+margin-bottom: 24px;
+letter-spacing: -0.02em;
+color: var(--text);
+}
+
+/* CARDS GRID */
+.grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 12px;
+margin-top: 32px;
+}
+
+.card {
+background: var(--card);
+border: 1px solid var(--border);
+padding: 20px 12px;
+border-radius: 18px;
+transition: 0.15s ease;
+font-size: 15px;
+font-weight: 450;
+color: var(--text);
+box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+}
+
+.card:active {
+background: color-mix(in srgb, var(--card) 90%, white);
+transform: scale(0.98);
+}
+
+.icon {
+font-size: 28px;
+margin-bottom: 6px;
+line-height: 1;
+}
+
+/* STEPS */
+.steps {
+margin-top: 32px;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.step {
+background: var(--card);
+border: 1px solid var(--border);
+padding: 16px 18px;
+border-radius: 30px;
+font-size: 16px;
+text-align: left;
+color: var(--text);
+font-weight: 450;
+box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* GAMES */
+.games {
+display: flex;
+flex-direction: column;
+gap: 12px;
+margin-top: 32px;
+}
+
+.game {
+background: var(--card);
+border: 1px solid var(--border);
+padding: 16px 20px;
+border-radius: 30px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+transition: 0.15s;
+font-size: 17px;
+font-weight: 500;
+color: var(--text);
+}
+
+.game:active {
+background: color-mix(in srgb, var(--card) 85%, white);
+}
+
+.badge {
+font-size: 13px;
+padding: 4px 14px;
+border-radius: 40px;
+background: var(--border);
+color: var(--hint);
+font-weight: 500;
+letter-spacing: 0.3px;
+}
+
+/* SOCIAL */
+.socials {
+margin-top: 32px;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.social {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+padding: 16px 22px;
+border: 1px solid var(--border);
+border-radius: 40px;
+text-decoration: none;
+color: var(--text);
+background: var(--card);
+font-weight: 500;
+font-size: 17px;
+transition: 0.15s;
+-webkit-touch-callout: none;
+}
+
+.social:active {
+background: color-mix(in srgb, var(--card) 80%, black);
+transform: scale(0.98);
+}
+
+/* DISCLAIMER */
+.disclaimer {
+margin-top: 32px;
+font-size: 14px;
+color: var(--hint);
+line-height: 1.6;
+max-width: 500px;
+margin-left: auto;
+margin-right: auto;
+padding: 0 10px;
+}
+
+/* PARTICLES — замедлены для энергоэффективности на мобильных */
+canvas {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+pointer-events: none;
+z-index: -1;
+opacity: 0.5; /* меньше отвлекает, экономичнее */
+}
+
+/* ANIM */
+@keyframes slideUp {
+from { transform: translateY(30px); opacity: 0; }
+to { transform: translateY(0); opacity: 1; }
+}
+
+/* убираем подчеркивания у ссылок, если они есть */
+a {
+text-decoration: none;
+}
+
+/* оптимизация тач-областей */
+.links a, .social, .game, .card, .step {
+cursor: pointer;
+touch-action: manipulation;
+}
+
+/* когда темная тема — легкая адаптация */
+@media (prefers-color-scheme: dark) {
+:root {
+--bg: #1a1a1a;
+--card: #232323;
+}
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+<img src="logos/ctnclientwhite.png" alt="Catana" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 30\'><text x=\'0\' y=\'20\' fill=\'white\' font-size=\'18\'>Catana</text></svg>'">
+<div class="links">
+<a href="#">Home</a>
+<a href="#how">How</a>
+<a href="#features">Feat</a>
+<a href="#games">Games</a>
+<a href="#socials">Soc</a>
+</div>
+</nav>
+
+<section class="hero">
+<h1>CATANA</h1>
+<p>clean client · tma ready</p>
+</section>
+
+<section id="how" class="section">
+<h2>How it works</h2>
+<div class="steps">
+<div class="step">1. Buy sub via Telegram bot</div>
+<div class="step">2. Download client files</div>
+<div class="step">3. Install & launch</div>
+<div class="step">4. Enjoy</div>
+</div>
+</section>
+
+<section id="features" class="section">
+<h2>What we offer</h2>
+<div class="grid">
+<div class="card"><span class="icon">⚡</span>Stable & optimized</div>
+<div class="card"><span class="icon">🎯</span>Clean interface</div>
+<div class="card"><span class="icon">🛠</span>Flexible settings</div>
+<div class="card"><span class="icon">🚀</span>Fast launch</div>
+<div class="card"><span class="icon">🔄</span>Regular updates</div>
+<div class="card"><span class="icon">💻</span>Minimal code</div>
+</div>
+</section>
+
+<section class="section">
+<h2>Why choose us</h2>
+<div class="grid">
+<div class="card">Monochrome design</div>
+<div class="card">Stable builds</div>
+<div class="card">Simple install</div>
+<div class="card">Fast support</div>
+<div class="card">Lightweight</div>
+<div class="card">Smooth perf</div>
+</div>
+</section>
+
+<section id="games" class="section">
+<h2>Supported games</h2>
+<div class="games">
+<div class="game">Roblox <span class="badge">EXT</span></div>
+<div class="game">CS2 <span class="badge">INT</span></div>
+<div class="game">Standoff 2 <span class="badge">EXT/INT</span></div>
+</div>
+</section>
+
+<section class="section">
+<h2>Disclaimer</h2>
+<div class="disclaimer">
+Software for educational purposes only.<br>
+By using you agree you act at your own risk.<br>
+Not responsible for account restrictions.<br>All responsibility lies with the user.
+</div>
+</section>
+
+<section id="socials" class="section">
+<h2>Socials</h2>
+<div class="socials">
+<a class="social" href="https://discord.com/invite/nHZrS7Upb9">💬 Discord</a>
+<a class="social" href="https://t.me/catanaclient1337">📱 Telegram</a>
+<a class="social" href="https://www.tiktok.com/@catanaclient1337">🎵 TikTok</a>
+</div>
+</section>
+
+<script>
+// Telegram Mini App интеграция
+(function() {
+  // Попытка подключить WebApp
+  let tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.expand(); // растянуть на весь экран
+    tg.enableClosingConfirmation?.(); // предупреждение при закрытии (опц.)
+    // Цвета автоматически подставятся через CSS переменные
+    // Можно установить цвет хедера под тему
+    tg.setHeaderColor?.('secondary_bg_color');
+    tg.ready(); // говорим, что приложение готово
+  }
+
+  // Particles canvas с адаптивным числом частиц (меньше на мобильных)
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  
+  let width, height;
+  let particles = [];
+  let particleCount = 60; // уменьшил кол-во для мобильных
+
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    initParticles();
+  }
+
+  function initParticles() {
+    particles = [];
+    // на очень маленьких экранах ещё меньше частиц
+    const count = width < 500 ? 35 : 60;
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 2 + 0.8,
+        s: Math.random() * 0.4 + 0.15, // медленнее = меньше батареи
+      });
+    }
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; // полупрозрачные, мягче
+    for (let p of particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      p.y += p.s;
+      if (p.y > height) {
+        p.y = 0;
+        p.x = Math.random() * width;
+      }
+    }
+    requestAnimationFrame(drawParticles);
+  }
+
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+  });
+  
+  resizeCanvas();
+  drawParticles();
+
+  // Intersection Observer для анимаций секций
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('show');
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '0px' });
+
+  document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+  // Плавный скролл к якорям с учётом фиксированного хедера
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href');
+      if (targetId === '#') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const targetEl = document.querySelector(targetId);
+      if (targetEl) {
+        const offsetTop = targetEl.offsetTop - 65; // высота nav + запас
+        window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // предотвращаем zoom двойным тапом (опционально)
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd < 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+
+  // загружаем Telegram API, если ещё не (для WebView)
+  if (!window.Telegram) {
+    const script = document.createElement('script');
+    script.src = 'https://telegram.org/js/telegram-web-app.js';
+    script.onload = () => {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.expand();
+        window.Telegram.WebApp.ready();
+      }
+    };
+    document.head.appendChild(script);
+  } else {
+    if (window.Telegram.WebApp) {
+      window.Telegram.WebApp.expand();
+      window.Telegram.WebApp.ready();
+    }
+  }
+})();
+</script>
+
+<!-- Поддержка случая, если картинка лого не загрузится -->
+</body>
+</html>
